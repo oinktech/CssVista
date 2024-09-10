@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSSVista</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/theme/dracula.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+        }
+        .input-container, .preview-container {
+            margin-bottom: 20px;
+        }
+        .input-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+        }
+        .CodeMirror {
+            height: 200px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            background-color: #f5f5f5;
+        }
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 5px;
+        }
+        button.primary {
+            background: #007bff;
+        }
+        button.primary:hover {
+            background: #0056b3;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        button.tertiary {
+            background: #17a2b8;
+        }
+        button.tertiary:hover {
+            background: #138496;
+        }
+        h2 {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        pre {
+            position: relative;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            overflow: auto;
+            font-size: 14px;
+            margin: 0;
+        }
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            padding: 0 10px;
+            background: #f5f5f5;
+            border-right: 1px solid #ddd;
+            color: #888;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .line-numbers span {
+            display: block;
+            height: 1.5em;
+            text-align: right;
+        }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .error, .info {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .success {
+            color: #28a745;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .download-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .download-button {
+            background: #28a745;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 16px;
+            width: 48%;
+            display: inline-block;
+            margin-right: 4%;
+        }
+        .download-button:hover {
+            background: #218838;
+        }
+        .editor-container {
+            margin-top: 20px;
+        }
+        .editor-tab {
+            display: inline-block;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .editor-tab.active {
+            background: #fff;
+            border-bottom: 1px solid transparent;
+        }
+        .hint {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .hint-container {
+            padding: 10px;
+            background: #e9ecef;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .log-container {
+            margin-top: 20px;
+        }
+        .log-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .log-item button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #17a2b8;
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .log-item button:hover {
+            background: #138496;
+        }
+        .log-item.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .log-item.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .log-item.info {
+            border-color: #17a2b8;
+            background: #d1ecf1;
+        }
+        .log-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .storage-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .storage-button {
+            background: #007bff;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 48%;
+            display: inline-block;
+            margin-right: 4%;
+        }
+        .storage-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSSVista</h1>
+        <div class="editor-container">
+            <div class="editor-tab active" id="cssTab">CSS 編輯器</div>
+            <div class="editor-tab" id="htmlTab">HTML 輸出</div>
+        </div>
+        <div class="input-container" id="cssEditorContainer">
+            <label for="cssInput" class="input-label">請輸入 CSS 代碼：</label>
+            <div id="codeMirrorContainer"></div>
+            <div class="hint-container">
+                <p class="hint">提示: 使用類選擇器（例如 .class-name）來標識 HTML 元素，這樣可以更好地生成相應的 HTML。</p>
+            </div>
+        </div>
+        <button id="generateButton" class="primary">生成並預覽</button>
+        <button id="clearButton" class="secondary">清除</button>
+        <button id="showLogButton" class="tertiary">顯示日誌</button>
+        <p id="error" class="error" style="display: none;"></p>
+        <p id="success" class="success" style="display: none;"></p>
+        <div class="preview-container">
+            <h2>生成的 HTML</h2>
+            <pre id="htmlOutput"><code id="htmlCode" class="language-html"></code></pre>
+            <h2>預覽</h2>
+            <iframe id="previewFrame"></iframe>
+        </div>
+        <div class="download-container">
+            <button id="downloadHtml" class="download-button">下載 HTML</button>
+            <button id="downloadCss" class="download-button">下載 CSS</button>
+        </div>
+        <div class="log-container" id="logContainer" style="display: none;"></div>
+        <div class="storage-container">
+            <button id="saveToDB" class="storage-button">儲存到 IndexedDB</button>
+            <button id="loadFromDB" class="storage-button">從 IndexedDB 載入</button>
+        </div>
+    </div>
+
+    <footer style="background-color: #343a40; color: #ffffff; padding: 20px 0; text-align: center; border-top: 1px solid #dee2e6;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <p style="margin: 0; font-size: 14px;">© 2024 Oinktech 保留所有權利。</p>
+        <p style="margin: 5px 0 0; font-size: 14px;">
+         
+    </div>
+</footer>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/addon/edit/closebrackets.min.js"></script>
+    <script>
+        const cssInput = document.getElementById('codeMirrorContainer');
+        const editor = CodeMirror(cssInput, {
+            mode: 'css',
+            theme: 'dracula',
+            lineNumbers: true,
+            placeholder: '輸入你的 CSS 代碼...',
+            extraKeys: {
+                "Ctrl-Space": "autocomplete",
+                "Ctrl-J": "toMatchingTag"
+            }
+        });
+
+        let logs = [];
+        let db;
+
+        function initDB() {
+            const request = indexedDB.open('CSSPreviewDB', 1);
+
+            request.onupgradeneeded = function(event) {
+                db = event.target.result;
+                db.createObjectStore('css', { keyPath: 'id' });
+                db.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
+            };
+
+            request.onsuccess = function(event) {
+                db = event.target.result;
+            };
+
+            request.onerror = function(event) {
+                displayError(`IndexedDB 初始化錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function highlightCode() {
+            const htmlCode = document.getElementById('htmlCode');
+            Prism.highlightElement(htmlCode);
+        }
+
+        function generateHTMLFromCSS(css) {
+            const htmlElements = new Set();
+
+            // Extract CSS class selectors
+            const classRegex = /\.(\w[\w-]*)\s*\{/g;
+            let match;
+            while ((match = classRegex.exec(css)) !== null) {
+                htmlElements.add(match[1]);
+            }
+
+            // Generate HTML structure
+            let htmlContent = '<!DOCTYPE html>\n<html lang="zh-TW">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>生成的預覽</title>\n    <style>\n';
+            htmlContent += css;
+            htmlContent += '    </style>\n</head>\n<body>\n';
+
+            htmlElements.forEach(element => {
+                htmlContent += `    <div class="${element}">範例 ${element}，內含一些示例文字。</div>\n`;
+            });
+
+            htmlContent += '</body>\n</html>';
+            return htmlContent;
+        }
+
+        function logMessage(type, message) {
+            const id = Date.now();
+            const logItem = { id, type, message };
+            logs.push(logItem);
+            const transaction = db.transaction(['logs'], 'readwrite');
+            const store = transaction.objectStore('logs');
+            store.add(logItem);
+
+            transaction.oncomplete = function() {
+                updateLogDisplay();
+            };
+
+            transaction.onerror = function(event) {
+                displayError(`儲存日誌到 IndexedDB 時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function updateLogDisplay() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            const transaction = db.transaction(['logs'], 'readonly');
+            const store = transaction.objectStore('logs');
+            const request = store.openCursor();
+
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const log = cursor.value;
+                    const logItem = document.createElement('div');
+                    logItem.className = `log-item ${log.type}`;
+                    logItem.innerHTML = `
+                        <p>${log.message}</p>
+                        <button onclick="viewLog(${log.id})">查看詳情</button>
+                        <button onclick="copyLog(${log.id})">複製</button>
+                    `;
+                    logContainer.appendChild(logItem);
+                    cursor.continue();
+                }
+            };
+
+            request.onerror = function(event) {
+                displayError(`讀取日誌時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function viewLog(id) {
+            const transaction = db.transaction(['logs'], 'readonly');
+            const store = transaction.objectStore('logs');
+            const request = store.get(id);
+
+            request.onsuccess = function(event) {
+                const log = event.target.result;
+                if (log) {
+                    const logWindow = window.open('', '_blank');
+                    logWindow.document.write(`<h1>日誌詳情</h1><p><strong>類型:</strong> ${log.type}</p><p><strong>內容:</strong> ${log.message}</p>`);
+                }
+            };
+
+            request.onerror = function(event) {
+                displayError(`讀取日誌詳情時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function copyLog(id) {
+            const transaction = db.transaction(['logs'], 'readonly');
+            const store = transaction.objectStore('logs');
+            const request = store.get(id);
+
+            request.onsuccess = function(event) {
+                const log = event.target.result;
+                if (log) {
+                    navigator.clipboard.writeText(log.message).then(() => {
+                        alert('日誌複製成功！');
+                    }, err => {
+                        displayError(`複製日誌時發生錯誤: ${err}`);
+                    });
+                }
+            };
+
+            request.onerror = function(event) {
+                displayError(`讀取日誌時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function saveToDB() {
+            const cssCode = editor.getValue();
+            const transaction = db.transaction(['css'], 'readwrite');
+            const store = transaction.objectStore('css');
+            store.put({ id: 'latest', css: cssCode });
+
+            transaction.oncomplete = function() {
+                logMessage('success', 'CSS 代碼已儲存到 IndexedDB！');
+            };
+
+            transaction.onerror = function(event) {
+                displayError(`儲存到 IndexedDB 時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function loadFromDB() {
+            const transaction = db.transaction(['css'], 'readonly');
+            const store = transaction.objectStore('css');
+            const request = store.get('latest');
+
+            request.onsuccess = function(event) {
+                const data = event.target.result;
+                if (data) {
+                    editor.setValue(data.css);
+                    logMessage('success', '從 IndexedDB 載入 CSS 代碼成功！');
+                } else {
+                    logMessage('info', '沒有找到儲存的 CSS 代碼。');
+                }
+            };
+
+            request.onerror = function(event) {
+                displayError(`載入 CSS 代碼時發生錯誤: ${event.target.errorCode}`);
+            };
+        }
+
+        function displayError(message) {
+            const errorElem = document.getElementById('error');
+            errorElem.innerText = message;
+            errorElem.style.display = 'block';
+            setTimeout(() => {
+                errorElem.style.display = 'none';
+            }, 5000);
+        }
+
+        document.getElementById('generateButton').addEventListener('click', function() {
+            const css = editor.getValue();
+            if (!css.trim()) {
+                displayError('請輸入 CSS 代碼。');
+                return;
+            }
+
+            const html = generateHTMLFromCSS(css);
+            document.getElementById('htmlCode').innerText = html;
+            highlightCode();
+
+            const iframe = document.getElementById('previewFrame');
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(html);
+            iframe.contentDocument.close();
+
+            logMessage('success', 'HTML 頁面生成並預覽成功！');
+        });
+
+        document.getElementById('clearButton').addEventListener('click', function() {
+            editor.setValue('');
+            document.getElementById('htmlCode').innerText = '';
+            document.getElementById('previewFrame').src = '';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        });
+
+        document.getElementById('showLogButton').addEventListener('click', function() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.style.display = logContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.getElementById('downloadHtml').addEventListener('click', function() {
+            const htmlCode = document.getElementById('htmlCode').innerText;
+            const blob = new Blob([htmlCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('downloadCss').addEventListener('click', function() {
+            const cssCode = editor.getValue();
+            const blob = new Blob([cssCode], { type: 'text/css' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'styles.css';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('saveToDB').addEventListener('click', saveToDB);
+        document.getElementById('loadFromDB').addEventListener('click', loadFromDB);
+
+        initDB();
+    </script>
+</body>
+</html>
